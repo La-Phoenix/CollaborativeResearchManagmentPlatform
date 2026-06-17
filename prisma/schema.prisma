@@ -1,13 +1,135 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+enum Role {
+  PI
+  CO_INVESTIGATOR
+  ASSISTANT
+  REVIEWER
+}
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum EthicalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXEMPT
+}
+
+enum OutputType {
+  JOURNAL
+  CONFERENCE
+  REPORT
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  projects ProjectMember[]
+  tasks    Task[]
+}
+
+model Project {
+  id                     String        @id @default(uuid())
+  title                  String
+  description            String
+  status                 ProjectStatus @default(ACTIVE)
+  ethicalClearanceStatus EthicalStatus @default(PENDING)
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  members   ProjectMember[]
+  tasks     Task[]
+  documents Document[]
+  surveys   Survey[]
+  outputs   ResearchOutput[]
+}
+
+model ProjectMember {
+  projectId String
+  userId    String
+  role      Role
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, userId])
+}
+
+model Task {
+  id             String   @id @default(uuid())
+  projectId      String
+  assignedUserId String?
+  title          String
+  dueDate        DateTime
+  isCompleted    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee User?   @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+}
+
+model Document {
+  id             String   @id @default(uuid())
+  projectId      String
+  title          String
+  content        Json?
+  lastModifiedBy String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Survey {
+  id         String   @id @default(uuid())
+  projectId  String
+  title      String
+  schemaJson Json
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  responses SurveyResponse[]
+}
+
+model ResearchOutput {
+  id         String     @id @default(uuid())
+  projectId  String
+  outputType OutputType
+  citation   String
+  fileUrl    String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model SurveyResponse {
+  id         String   @id @default(uuid())
+  surveyId   String
+  answers    Json
+  submittedBy String?
+  createdAt  DateTime @default(now())
+
+  survey Survey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
 }
