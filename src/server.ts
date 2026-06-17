@@ -30,6 +30,8 @@ app.use(express.json());
 // Swagger Documentation Route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+import uploadRoutes from './routes/uploadRoutes';
+
 // Base route redirects
 app.get('/', (req: Request, res: Response) => res.redirect('/api-docs/'));
 app.get('/api', (req: Request, res: Response) => res.redirect('/api-docs/'));
@@ -41,6 +43,7 @@ app.use('/api', taskRoutes);
 app.use('/api', documentRoutes);
 app.use('/api', surveyRoutes);
 app.use('/api', outputRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Basic health check route
 app.get('/api/health', (req: Request, res: Response) => {

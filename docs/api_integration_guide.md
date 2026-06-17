@@ -56,6 +56,11 @@ This guide details the complete CRMP Backend implementation, exposing all REST A
 | `POST` | `/projects/:id/outputs` | Log a research output (Journal, etc.) | `PI`, `CO_INVESTIGATOR` |
 | `GET`  | `/projects/:id/outputs` | List project research outputs | Any Project Member |
 
+### File Uploads (Cloudinary)
+| Method | Endpoint | Description | Request Body | Auth Required |
+|---|---|---|---|---|
+| `POST` | `/api/upload` | Upload a file to Cloudinary | `multipart/form-data` with `file` field | Yes |
+
 ---
 
 ## 3. Real-Time Collaboration (Socket.io)

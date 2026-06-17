@@ -46,5 +46,6 @@ The platform provides a Google Docs-like collaborative editing experience.
 
 ## 6. Official Research Output Flow
 
-1. **Publishing:** Once the research yields results, the PI or Co-Investigator formally logs the output (`POST /api/projects/:id/outputs`).
-2. **Tracking:** This includes the `OutputType` (e.g., `JOURNAL`, `CONFERENCE`), citation string, and manuscript link. This serves as the definitive academic ledger for the project, viewable by all members.
+1. **File Upload (Optional):** If the output includes a physical manuscript or dataset, the user first uploads the file via `POST /api/upload` using `multipart/form-data`. The backend streams this securely to Cloudinary and responds with a persistent `fileUrl`.
+2. **Publishing:** The PI or Co-Investigator formally logs the output (`POST /api/projects/:id/outputs`), attaching the `fileUrl` obtained from the previous step.
+3. **Tracking:** This includes the `OutputType` (e.g., `JOURNAL`, `CONFERENCE`), citation string, and manuscript link. This serves as the definitive academic ledger for the project, viewable by all members.
