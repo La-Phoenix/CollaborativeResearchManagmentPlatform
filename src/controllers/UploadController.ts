@@ -7,8 +7,7 @@ export class UploadController {
    */
   static async uploadFile(req: AuthRequest, res: Response) {
     try {
-      // Cast to any to bypass TS complaining about req.file from Multer
-      const multerReq = req as any;
+      const multerReq = req as AuthRequest & { file?: Express.Multer.File };
       if (!multerReq.file) {
         return res.status(400).json({ error: 'No file provided' });
       }

@@ -10,10 +10,12 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+import { Request } from 'express';
+
 // Configure Multer Storage Engine to stream directly to Cloudinary
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  params: async (req: any, file: any) => {
+  params: async (req: Request, file: Express.Multer.File) => {
     return {
       folder: 'crmp_uploads', // The folder in your Cloudinary account
       allowed_formats: ['jpg', 'png', 'jpeg', 'pdf', 'docx', 'csv'],
