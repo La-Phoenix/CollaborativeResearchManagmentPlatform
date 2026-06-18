@@ -1,4 +1,5 @@
 import { Server, Socket } from 'socket.io';
+import { prisma } from '../db';
 
 export const setupCollaborationSockets = (io: Server) => {
   // We can create a dedicated namespace, or just use the root namespace. We'll use root for simplicity.
@@ -49,9 +50,25 @@ export const setupCollaborationSockets = (io: Server) => {
     });
 
     // Broadcast a general project activity (e.g., Task completed, Document added)
-    socket.on('broadcast-activity', (payload: { projectId: string, activityType: string, message: string }) => {
-      // Forward the notification to all users currently viewing the project dashboard
-      socket.to(`project-${payload.projectId}`).emit('receive-activity', payload);
+    socket.on('broadcast-activity', async (payload: { projectId: string, activityType: string, message: string, initiatorId?: string, targetId?: string, metadata?: any }) => {
+      try {
+        // Persist to DB
+        const activity = await prisma.activity.create({
+          data: {
+            projectId: payload.projectId,
+            activityType: payload.activityType,
+            message: payload.message,
+            initiatorId: payload.initiatorId,
+            targetId: payload.targetId,
+            metadata: payload.metadata ?? {},
+          }
+        });
+        
+        // Forward the notification with the new DB ID and timestamp
+        socket.to(`project-${payload.projectId}`).emit('receive-activity', activity);
+      } catch (err) {
+        console.error('Failed to save and broadcast activity:', err);
+      }
     });
     
   });

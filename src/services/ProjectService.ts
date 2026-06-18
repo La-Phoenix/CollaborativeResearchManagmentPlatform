@@ -110,4 +110,44 @@ export class ProjectService {
 
     return project;
   }
+
+  /**
+   * Removes a member from a project.
+   */
+  static async removeProjectMember(projectId: string, targetUserId: string) {
+    const existingMember = await prisma.projectMember.findUnique({
+      where: {
+        projectId_userId: {
+          projectId,
+          userId: targetUserId,
+        },
+      },
+    });
+
+    if (!existingMember) {
+      throw { statusCode: 404, message: 'User is not a member of this project.' };
+    }
+
+    if (existingMember.role === 'PI') {
+      // Typically we don't allow removing the main PI unless there's another PI, 
+      // but for simplicity, we'll just throw an error.
+      const pis = await prisma.projectMember.count({
+        where: { projectId, role: 'PI' },
+      });
+      if (pis <= 1) {
+        throw { statusCode: 400, message: 'Cannot remove the only Principal Investigator from the project.' };
+      }
+    }
+
+    await prisma.projectMember.delete({
+      where: {
+        projectId_userId: {
+          projectId,
+          userId: targetUserId,
+        },
+      },
+    });
+
+    return { success: true };
+  }
 }

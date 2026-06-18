@@ -85,4 +85,20 @@ export class ProjectController {
       next(error);
     }
   }
+
+  static async removeMember(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const projectId = req.params.id as string;
+      const targetUserId = req.params.userId as string;
+
+      if (!targetUserId) {
+        return res.status(400).json({ error: 'Bad Request', message: 'Target user ID is required.' });
+      }
+
+      await ProjectService.removeProjectMember(projectId, targetUserId);
+      res.status(200).json({ message: 'Member removed successfully.' });
+    } catch (error) {
+      next(error);
+    }
+  }
 }

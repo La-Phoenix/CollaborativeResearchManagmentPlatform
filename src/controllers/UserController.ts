@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../config/prisma';
+import { prisma } from '../db';
 
 export class UserController {
   /**
@@ -21,7 +21,6 @@ export class UserController {
           select: {
             id: true,
             email: true,
-            role: true,
             createdAt: true,
           },
           take: 20, // limit to 20 results for performance
@@ -31,7 +30,6 @@ export class UserController {
           select: {
             id: true,
             email: true,
-            role: true,
             createdAt: true,
           },
           take: 50, // limit to 50 results if no query

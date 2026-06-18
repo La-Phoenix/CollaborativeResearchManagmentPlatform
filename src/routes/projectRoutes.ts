@@ -166,4 +166,31 @@ router.post('/:id/members', authenticateJWT, requireRole(['PI']), ProjectControl
  */
 router.put('/:id/ethics', authenticateJWT, requireRole(['PI']), ProjectController.updateEthics);
 
+/**
+ * @swagger
+ * /api/projects/{id}/members/{userId}:
+ *   delete:
+ *     summary: Remove a member from a project
+ *     tags: [Projects]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Member removed successfully
+ *       403:
+ *         description: Forbidden. Only the PI can remove members.
+ */
+router.delete('/:id/members/:userId', authenticateJWT, requireRole(['PI']), ProjectController.removeMember);
+
 export default router;

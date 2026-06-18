@@ -11,6 +11,7 @@ import taskRoutes from './routes/taskRoutes';
 import documentRoutes from './routes/documentRoutes';
 import surveyRoutes from './routes/surveyRoutes';
 import outputRoutes from './routes/outputRoutes';
+import activityRoutes from './routes/activityRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 import { setupCollaborationSockets } from './sockets/collaborationHandler';
 
@@ -45,6 +46,7 @@ app.use('/api', taskRoutes);
 app.use('/api', documentRoutes);
 app.use('/api', surveyRoutes);
 app.use('/api', outputRoutes);
+app.use('/api', activityRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Basic health check route
