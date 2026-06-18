@@ -13,8 +13,8 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
-        description: 'Local Development Server',
+        url: process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000',
+        description: 'API Server',
       },
     ],
     components: {
