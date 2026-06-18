@@ -31,6 +31,7 @@ app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 import uploadRoutes from './routes/uploadRoutes';
+import userRoutes from './routes/userRoutes';
 
 // Base route redirects
 app.get('/', (req: Request, res: Response) => res.redirect('/api-docs/'));
@@ -38,6 +39,7 @@ app.get('/api', (req: Request, res: Response) => res.redirect('/api-docs/'));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api', userRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', documentRoutes);

@@ -11,11 +11,12 @@ This guide details the complete CRMP Backend implementation, exposing all REST A
 
 ## 2. REST API Endpoints
 
-### Authentication
+### 1. Authentication & Users
 | Method | Endpoint | Description | Request Body | Auth Required |
 |---|---|---|---|---|
-| `POST` | `/auth/register` | Register a new user | `{ email, password, firstName, lastName }` | No |
-| `POST` | `/auth/login` | Login and receive JWT | `{ email, password }` | No |
+| `POST` | `/auth/register` | Create a new account | `{ email, password, role }` | No |
+| `POST` | `/auth/login` | Login to receive JWT | `{ email, password }` | No |
+| `GET`  | `/users` | List or search users by email | Query: `?q=email_search` | Yes |
 
 ### Projects
 | Method | Endpoint | Description | Role Required |
