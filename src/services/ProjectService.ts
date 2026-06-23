@@ -112,6 +112,18 @@ export class ProjectService {
   }
 
   /**
+   * Updates the general status of a project.
+   */
+  static async updateProjectStatus(projectId: string, status: any): Promise<Project> {
+    const project = await prisma.project.update({
+      where: { id: projectId },
+      data: { status: status },
+    });
+
+    return project;
+  }
+
+  /**
    * Removes a member from a project.
    */
   static async removeProjectMember(projectId: string, targetUserId: string) {

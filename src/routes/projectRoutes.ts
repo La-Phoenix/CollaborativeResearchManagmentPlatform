@@ -165,6 +165,7 @@ router.post('/:id/members', authenticateJWT, requireRole(['PI']), ProjectControl
  *         description: Forbidden. Only the PI can update ethics.
  */
 router.put('/:id/ethics', authenticateJWT, requireRole(['PI']), ProjectController.updateEthics);
+router.patch('/:id/status', authenticateJWT, requireRole(['PI']), ProjectController.updateStatus);
 
 /**
  * @swagger

@@ -86,6 +86,22 @@ export class ProjectController {
     }
   }
 
+  static async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const projectId = req.params.id as string;
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({ error: 'Bad Request', message: 'Project status is required.' });
+      }
+
+      const project = await ProjectService.updateProjectStatus(projectId, status);
+      res.status(200).json({ message: 'Project status updated.', project });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async removeMember(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const projectId = req.params.id as string;

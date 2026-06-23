@@ -50,8 +50,8 @@ app.use('/api', activityRoutes);
 app.use('/api/upload', uploadRoutes);
 
 // Basic health check route
-app.get('/api/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'ok', message: 'CRMP Backend is running!' });
+app.get('/api/ping', (req: Request, res: Response) => {
+  res.status(200).json({ message: 'pong', status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // Global Error Handler (must be the last app.use)

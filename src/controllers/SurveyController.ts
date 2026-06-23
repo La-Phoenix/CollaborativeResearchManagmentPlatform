@@ -33,11 +33,31 @@ export class SurveyController {
     }
   }
 
-  static async submitResponse(req: AuthRequest, res: Response, next: NextFunction) {
+  static async getSurvey(req: Request, res: Response, next: NextFunction) {
+    try {
+      const surveyId = req.params.surveyId as string;
+      const survey = await SurveyService.getSurveyById(surveyId);
+      if (!survey) return res.status(404).json({ error: 'Not Found', message: 'Survey not found.' });
+      
+      // We only return safe public fields (title, schemaJson, isActive, projectId)
+      res.status(200).json({ 
+        survey: {
+          id: survey.id,
+          title: survey.title,
+          projectId: survey.projectId,
+          schemaJson: survey.schemaJson,
+          isActive: survey.isActive
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async submitResponse(req: Request, res: Response, next: NextFunction) {
     try {
       const surveyId = req.params.surveyId as string;
       const { answers } = req.body;
-      const userId = req.user?.id;
 
       if (!answers) {
         return res.status(400).json({ error: 'Bad Request', message: 'Answers JSON is required.' });
@@ -48,18 +68,14 @@ export class SurveyController {
         return res.status(404).json({ error: 'Not Found', message: 'Survey not found.' });
       }
 
-      // Check project membership
-      const member = await prisma.projectMember.findUnique({
-        where: {
-          projectId_userId: { projectId: existingSurvey.projectId, userId: userId! },
-        },
-      });
-
-      if (!member) {
-        return res.status(403).json({ error: 'Forbidden', message: 'You are not a member of the project this survey belongs to.' });
+      if (!existingSurvey.isActive) {
+        return res.status(400).json({ error: 'Bad Request', message: 'This survey is no longer accepting responses.' });
       }
 
-      const response = await SurveyService.submitSurveyResponse(surveyId, answers, userId);
+      // No project membership or auth check required for MVP as requested by user.
+      // Anyone can submit anonymously.
+      
+      const response = await SurveyService.submitSurveyResponse(surveyId, answers, undefined);
       res.status(201).json({ message: 'Survey response submitted successfully.', response });
     } catch (error) {
       next(error);

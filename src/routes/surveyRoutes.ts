@@ -68,12 +68,31 @@ router.get('/projects/:id/surveys', authenticateJWT, requireRole(['PI', 'CO_INVE
 
 /**
  * @swagger
+ * /api/surveys/{surveyId}:
+ *   get:
+ *     summary: Fetch a survey schema publically
+ *     tags: [Surveys]
+ *     parameters:
+ *       - in: path
+ *         name: surveyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Survey schema details.
+ *       404:
+ *         description: Not found.
+ */
+router.get('/surveys/:surveyId', SurveyController.getSurvey);
+
+/**
+ * @swagger
  * /api/surveys/{surveyId}/responses:
  *   post:
  *     summary: Submit a response to a survey
  *     tags: [Surveys]
- *     security:
- *       - BearerAuth: []
+ *     security: []
  *     parameters:
  *       - in: path
  *         name: surveyId
@@ -96,7 +115,7 @@ router.get('/projects/:id/surveys', authenticateJWT, requireRole(['PI', 'CO_INVE
  *       201:
  *         description: Response submitted.
  */
-router.post('/surveys/:surveyId/responses', authenticateJWT, SurveyController.submitResponse);
+router.post('/surveys/:surveyId/responses', SurveyController.submitResponse);
 
 /**
  * @swagger
