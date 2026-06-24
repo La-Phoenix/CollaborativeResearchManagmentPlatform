@@ -1,10 +1,10 @@
 import { Response, NextFunction } from 'express';
-import { PrismaClient, Role } from '@prisma/client';
 import { AuthRequest } from './authMiddleware';
+import { Role } from '../types/enums';
 
 import { prisma } from '../db';
 
-export const requireRole = (allowedRoles: Role[]) => {
+export const requireRole = (allowedRoles: string[]) => {
   return async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
       const userId = req.user?.id;
@@ -32,7 +32,7 @@ export const requireRole = (allowedRoles: Role[]) => {
         return res.status(403).json({ error: 'Forbidden', message: 'You are not a member of this project.' });
       }
 
-      if (!allowedRoles.includes(member.role)) {
+      if (!allowedRoles.includes(member.role as Role)) {
         return res.status(403).json({ error: 'Forbidden', message: 'You do not have the required role to perform this action.' });
       }
 

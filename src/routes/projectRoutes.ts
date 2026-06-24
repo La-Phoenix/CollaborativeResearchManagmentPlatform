@@ -164,8 +164,9 @@ router.post('/:id/members', authenticateJWT, requireRole(['PI']), ProjectControl
  *       403:
  *         description: Forbidden. Only the PI can update ethics.
  */
-router.put('/:id/ethics', authenticateJWT, requireRole(['PI']), ProjectController.updateEthics);
-router.patch('/:id/status', authenticateJWT, requireRole(['PI']), ProjectController.updateStatus);
+router.patch('/:id/ethics', authenticateJWT, requireRole(['PI', 'REVIEWER']), ProjectController.updateEthics);
+router.patch('/:id/internal-stage', authenticateJWT, requireRole(['PI', 'REVIEWER']), ProjectController.updateInternalStage);
+router.patch('/:id/status', authenticateJWT, requireRole(['PI', 'REVIEWER']), ProjectController.updateStatus);
 
 /**
  * @swagger

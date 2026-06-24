@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ProjectService } from '../services/ProjectService';
 import { AuthRequest } from '../middlewares/authMiddleware';
+import { Role, EthicalStatus, InternalStage, ProjectStatus } from '../types/enums';
 
 export class ProjectController {
   static async createProject(req: AuthRequest, res: Response, next: NextFunction) {
@@ -63,6 +64,10 @@ export class ProjectController {
         return res.status(400).json({ error: 'Bad Request', message: 'Target user ID and role are required.' });
       }
 
+      if (!Object.values(Role).includes(role as Role)) {
+        return res.status(400).json({ error: 'Bad Request', message: 'Invalid role.' });
+      }
+
       const member = await ProjectService.addProjectMember(projectId, targetUserId, role);
       res.status(201).json({ message: 'Member added successfully.', member });
     } catch (error) {
@@ -73,14 +78,49 @@ export class ProjectController {
   static async updateEthics(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const projectId = req.params.id as string;
-      const { status } = req.body;
+      const { 
+        status, 
+        ethicalClearanceNumber, 
+        ethicalClearanceDocumentUrl, 
+        ethicalApprovalDate, 
+        ethicalExpiryDate 
+      } = req.body;
 
       if (!status) {
         return res.status(400).json({ error: 'Bad Request', message: 'Ethics status is required.' });
       }
 
-      const project = await ProjectService.updateEthicalStatus(projectId, status);
+      if (!Object.values(EthicalStatus).includes(status as EthicalStatus)) {
+        return res.status(400).json({ error: 'Bad Request', message: 'Invalid ethics status.' });
+      }
+
+      const project = await ProjectService.updateEthicalStatus(projectId, status, {
+        ethicalClearanceNumber,
+        ethicalClearanceDocumentUrl,
+        ethicalApprovalDate,
+        ethicalExpiryDate
+      });
       res.status(200).json({ message: 'Ethical status updated.', project });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  static async updateInternalStage(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const projectId = req.params.id as string;
+      const { stage } = req.body;
+
+      if (!stage) {
+        return res.status(400).json({ error: 'Bad Request', message: 'Internal stage is required.' });
+      }
+
+      if (!Object.values(InternalStage).includes(stage as InternalStage)) {
+        return res.status(400).json({ error: 'Bad Request', message: 'Invalid internal stage.' });
+      }
+
+      const project = await ProjectService.updateInternalStage(projectId, stage);
+      res.status(200).json({ message: 'Internal stage updated.', project });
     } catch (error) {
       next(error);
     }
@@ -93,6 +133,10 @@ export class ProjectController {
 
       if (!status) {
         return res.status(400).json({ error: 'Bad Request', message: 'Project status is required.' });
+      }
+
+      if (!Object.values(ProjectStatus).includes(status as ProjectStatus)) {
+        return res.status(400).json({ error: 'Bad Request', message: 'Invalid project status.' });
       }
 
       const project = await ProjectService.updateProjectStatus(projectId, status);

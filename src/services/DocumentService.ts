@@ -33,7 +33,6 @@ export class DocumentService {
         lastModifiedBy: true,
         createdAt: true,
         updatedAt: true,
-        content: false, // Don't fetch full content in a list view for performance
       },
     }) as Document[];
 

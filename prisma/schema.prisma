@@ -6,31 +6,7 @@ datasource db {
   provider = "postgresql"
 }
 
-enum Role {
-  PI
-  CO_INVESTIGATOR
-  ASSISTANT
-  REVIEWER
-}
-
-enum ProjectStatus {
-  ACTIVE
-  COMPLETED
-  ARCHIVED
-}
-
-enum EthicalStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  EXEMPT
-}
-
-enum OutputType {
-  JOURNAL
-  CONFERENCE
-  REPORT
-}
+// We are managing Enums at the application level (in TypeScript) instead of DB-level native enums.
 
 model User {
   id           String   @id @default(uuid())
@@ -51,12 +27,17 @@ model User {
 
 model Project {
   id                     String        @id @default(uuid())
-  title                  String
-  description            String
-  status                 ProjectStatus @default(ACTIVE)
-  ethicalClearanceStatus EthicalStatus @default(PENDING)
-  createdAt              DateTime      @default(now())
-  updatedAt              DateTime      @updatedAt
+  title                       String
+  description                 String
+  status                      String @default("DRAFT")
+  internalStage               String @default("PROPOSAL")
+  ethicalClearanceStatus      String @default("PENDING")
+  ethicalClearanceNumber      String?
+  ethicalClearanceDocumentUrl String?
+  ethicalApprovalDate         DateTime?
+  ethicalExpiryDate           DateTime?
+  createdAt                   DateTime      @default(now())
+  updatedAt                   DateTime      @updatedAt
 
   members   ProjectMember[]
   tasks     Task[]
@@ -69,7 +50,7 @@ model Project {
 model ProjectMember {
   projectId String
   userId    String
-  role      Role
+  role      String
   joinedAt  DateTime @default(now())
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -120,7 +101,7 @@ model Survey {
 model ResearchOutput {
   id         String     @id @default(uuid())
   projectId  String
-  outputType OutputType
+  outputType String
   citation   String
   fileUrl    String?
   createdAt  DateTime   @default(now())

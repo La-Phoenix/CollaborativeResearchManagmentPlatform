@@ -1,4 +1,4 @@
-import { PrismaClient, Project, Role } from '@prisma/client';
+import { PrismaClient, Project } from '@prisma/client';
 
 import { prisma } from '../db';
 
@@ -73,7 +73,7 @@ export class ProjectService {
   /**
    * Adds a new member to an existing project.
    */
-  static async addProjectMember(projectId: string, targetUserId: string, role: Role) {
+  static async addProjectMember(projectId: string, targetUserId: string, role: string) {
     // Prevent duplicate members
     const existingMember = await prisma.projectMember.findUnique({
       where: {
@@ -102,10 +102,49 @@ export class ProjectService {
   /**
    * Updates the ethical clearance status of a project.
    */
-  static async updateEthicalStatus(projectId: string, status: any): Promise<Project> {
+  static async updateEthicalStatus(
+    projectId: string,
+    status: any,
+    metadata?: {
+      ethicalClearanceNumber?: string;
+      ethicalClearanceDocumentUrl?: string;
+      ethicalApprovalDate?: string | Date;
+      ethicalExpiryDate?: string | Date;
+    }
+  ): Promise<Project> {
+    const dataToUpdate: any = { ethicalClearanceStatus: status };
+    if (metadata?.ethicalClearanceNumber !== undefined) dataToUpdate.ethicalClearanceNumber = metadata.ethicalClearanceNumber;
+    if (metadata?.ethicalClearanceDocumentUrl !== undefined) dataToUpdate.ethicalClearanceDocumentUrl = metadata.ethicalClearanceDocumentUrl;
+    if (metadata?.ethicalApprovalDate !== undefined) dataToUpdate.ethicalApprovalDate = metadata.ethicalApprovalDate ? new Date(metadata.ethicalApprovalDate) : null;
+    if (metadata?.ethicalExpiryDate !== undefined) dataToUpdate.ethicalExpiryDate = metadata.ethicalExpiryDate ? new Date(metadata.ethicalExpiryDate) : null;
+
+    // Automate workflow transitions based on Ethical Status
+    if (status === 'UNDER_REVIEW') {
+      dataToUpdate.status = 'PENDING';
+      dataToUpdate.internalStage = 'ETHICS_REVIEW';
+    } else if (status === 'APPROVED' || status === 'NOT_REQUIRED') {
+      dataToUpdate.status = 'ACTIVE';
+      dataToUpdate.internalStage = 'DATA_COLLECTION';
+    } else if (status === 'REJECTED') {
+      dataToUpdate.status = 'DRAFT';
+      dataToUpdate.internalStage = 'PROPOSAL';
+    }
+
     const project = await prisma.project.update({
       where: { id: projectId },
-      data: { ethicalClearanceStatus: status },
+      data: dataToUpdate,
+    });
+
+    return project;
+  }
+
+  /**
+   * Updates the internal stage of a project.
+   */
+  static async updateInternalStage(projectId: string, stage: any): Promise<Project> {
+    const project = await prisma.project.update({
+      where: { id: projectId },
+      data: { internalStage: stage },
     });
 
     return project;
