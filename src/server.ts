@@ -12,6 +12,8 @@ import documentRoutes from './routes/documentRoutes';
 import surveyRoutes from './routes/surveyRoutes';
 import outputRoutes from './routes/outputRoutes';
 import activityRoutes from './routes/activityRoutes';
+import discoveryRoutes from './routes/discoveryRoutes';
+import proposalRoutes from './routes/proposalRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 import { setupCollaborationSockets } from './sockets/collaborationHandler';
 
@@ -33,6 +35,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 import uploadRoutes from './routes/uploadRoutes';
 import userRoutes from './routes/userRoutes';
+import applicationRoutes from './routes/applicationRoutes';
 
 // Base route redirects
 app.get('/', (req: Request, res: Response) => res.redirect('/api-docs/'));
@@ -42,12 +45,15 @@ app.get('/api', (req: Request, res: Response) => res.redirect('/api-docs/'));
 app.use('/api/auth', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/projects', proposalRoutes);
 app.use('/api', taskRoutes);
 app.use('/api', documentRoutes);
 app.use('/api', surveyRoutes);
 app.use('/api', outputRoutes);
 app.use('/api', activityRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/discover', discoveryRoutes);
+app.use('/api/applications', applicationRoutes);
 
 // Basic health check route
 app.get('/api/ping', (req: Request, res: Response) => {

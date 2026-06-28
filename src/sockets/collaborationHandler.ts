@@ -1,7 +1,11 @@
 import { Server, Socket } from 'socket.io';
 import { prisma } from '../db';
 
-export const setupCollaborationSockets = (io: Server) => {
+export let io: Server;
+
+export const setupCollaborationSockets = (serverIo: Server) => {
+  io = serverIo;
+  
   // We can create a dedicated namespace, or just use the root namespace. We'll use root for simplicity.
   io.on('connection', (socket: Socket) => {
     

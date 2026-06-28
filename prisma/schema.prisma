@@ -14,12 +14,16 @@ model User {
   passwordHash String
   firstName    String
   lastName     String
+  university   String?
+  faculty      String?
+  department   String?
   isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  projects ProjectMember[]
-  tasks    Task[]
+  projects     ProjectMember[]
+  applications ProjectApplication[]
+  tasks        Task[]
 
   initiatedActivities Activity[] @relation("ActivityInitiator")
   targetedActivities  Activity[] @relation("ActivityTarget")
@@ -27,24 +31,23 @@ model User {
 
 model Project {
   id                     String        @id @default(uuid())
-  title                       String
-  description                 String
-  status                      String @default("DRAFT")
-  internalStage               String @default("PROPOSAL")
-  ethicalClearanceStatus      String @default("PENDING")
-  ethicalClearanceNumber      String?
-  ethicalClearanceDocumentUrl String?
-  ethicalApprovalDate         DateTime?
-  ethicalExpiryDate           DateTime?
-  createdAt                   DateTime      @default(now())
-  updatedAt                   DateTime      @updatedAt
+  title                  String
+  researchTopic          String?
+  description            String
+  visibility             String        @default("PUBLIC")
+  university             String?
+  status                 String        @default("DRAFT")
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
 
-  members   ProjectMember[]
-  tasks     Task[]
-  documents  Document[]
-  surveys    Survey[]
-  outputs    ResearchOutput[]
-  activities Activity[]
+  members      ProjectMember[]
+  applications ProjectApplication[]
+  proposal     Proposal?
+  tasks        Task[]
+  documents    Document[]
+  surveys      Survey[]
+  outputs      ResearchOutput[]
+  activities   Activity[]
 }
 
 model ProjectMember {
@@ -57,6 +60,32 @@ model ProjectMember {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([projectId, userId])
+}
+
+model ProjectApplication {
+  id        String   @id @default(uuid())
+  projectId String
+  userId    String
+  role      String
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Proposal {
+  id        String   @id @default(uuid())
+  projectId String   @unique
+  type      String   // COLLABORATIVE, UPLOADED
+  content   Json?
+  fileUrl   String?
+  status    String   @default("DRAFT")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model Task {

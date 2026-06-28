@@ -6,15 +6,24 @@ export class ProjectService {
   /**
    * Creates a new project and automatically assigns the creator as the Principal Investigator (PI).
    */
-  static async createProject(userId: string, title: string, description: string): Promise<Project> {
+  static async createProject(userId: string, title: string, description: string, researchTopic: string): Promise<Project> {
+    // Inherit the PI's university so discovery scoping works
+    const creator = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { university: true },
+    });
+
     const project = await prisma.project.create({
       data: {
         title,
         description,
+        researchTopic,
+        university: creator?.university ?? null,
+        visibility: 'PUBLIC',          // default public so discovery works
         members: {
           create: {
             userId,
-            role: 'PI', // The creator is automatically the PI
+            role: 'PI',
           },
         },
       },
@@ -64,6 +73,7 @@ export class ProjectService {
           },
         },
         tasks: true,
+        proposal: true,
       },
     });
 
@@ -100,63 +110,23 @@ export class ProjectService {
   }
 
   /**
-   * Updates the ethical clearance status of a project.
-   */
-  static async updateEthicalStatus(
-    projectId: string,
-    status: any,
-    metadata?: {
-      ethicalClearanceNumber?: string;
-      ethicalClearanceDocumentUrl?: string;
-      ethicalApprovalDate?: string | Date;
-      ethicalExpiryDate?: string | Date;
-    }
-  ): Promise<Project> {
-    const dataToUpdate: any = { ethicalClearanceStatus: status };
-    if (metadata?.ethicalClearanceNumber !== undefined) dataToUpdate.ethicalClearanceNumber = metadata.ethicalClearanceNumber;
-    if (metadata?.ethicalClearanceDocumentUrl !== undefined) dataToUpdate.ethicalClearanceDocumentUrl = metadata.ethicalClearanceDocumentUrl;
-    if (metadata?.ethicalApprovalDate !== undefined) dataToUpdate.ethicalApprovalDate = metadata.ethicalApprovalDate ? new Date(metadata.ethicalApprovalDate) : null;
-    if (metadata?.ethicalExpiryDate !== undefined) dataToUpdate.ethicalExpiryDate = metadata.ethicalExpiryDate ? new Date(metadata.ethicalExpiryDate) : null;
-
-    // Automate workflow transitions based on Ethical Status
-    if (status === 'UNDER_REVIEW') {
-      dataToUpdate.status = 'PENDING';
-      dataToUpdate.internalStage = 'ETHICS_REVIEW';
-    } else if (status === 'APPROVED' || status === 'NOT_REQUIRED') {
-      dataToUpdate.status = 'ACTIVE';
-      dataToUpdate.internalStage = 'DATA_COLLECTION';
-    } else if (status === 'REJECTED') {
-      dataToUpdate.status = 'DRAFT';
-      dataToUpdate.internalStage = 'PROPOSAL';
-    }
-
-    const project = await prisma.project.update({
-      where: { id: projectId },
-      data: dataToUpdate,
-    });
-
-    return project;
-  }
-
-  /**
-   * Updates the internal stage of a project.
-   */
-  static async updateInternalStage(projectId: string, stage: any): Promise<Project> {
-    const project = await prisma.project.update({
-      where: { id: projectId },
-      data: { internalStage: stage },
-    });
-
-    return project;
-  }
-
-  /**
    * Updates the general status of a project.
    */
   static async updateProjectStatus(projectId: string, status: any): Promise<Project> {
     const project = await prisma.project.update({
       where: { id: projectId },
       data: { status: status },
+      include: {
+        members: {
+          include: {
+            user: {
+              select: { id: true, firstName: true, lastName: true, email: true },
+            },
+          },
+        },
+        tasks: true,
+        proposal: true,
+      },
     });
 
     return project;

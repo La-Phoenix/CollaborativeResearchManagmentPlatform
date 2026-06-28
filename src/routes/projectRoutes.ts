@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { ProjectController } from '../controllers/ProjectController';
+import { ApplicationController } from '../controllers/ApplicationController';
 import { authenticateJWT } from '../middlewares/authMiddleware';
 import { requireRole } from '../middlewares/rbacMiddleware';
 
@@ -132,40 +133,6 @@ router.get('/:id', authenticateJWT, requireRole(['PI', 'CO_INVESTIGATOR', 'ASSIS
  */
 router.post('/:id/members', authenticateJWT, requireRole(['PI']), ProjectController.addMember);
 
-/**
- * @swagger
- * /api/projects/{id}/ethics:
- *   put:
- *     summary: Update the ethical clearance status of the project
- *     tags: [Projects]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - status
- *             properties:
- *               status:
- *                 type: string
- *                 enum: [PENDING, APPROVED, REJECTED, EXEMPT]
- *     responses:
- *       200:
- *         description: Ethical status updated.
- *       403:
- *         description: Forbidden. Only the PI can update ethics.
- */
-router.patch('/:id/ethics', authenticateJWT, requireRole(['PI', 'REVIEWER']), ProjectController.updateEthics);
-router.patch('/:id/internal-stage', authenticateJWT, requireRole(['PI', 'REVIEWER']), ProjectController.updateInternalStage);
 router.patch('/:id/status', authenticateJWT, requireRole(['PI', 'REVIEWER']), ProjectController.updateStatus);
 
 /**
@@ -194,5 +161,8 @@ router.patch('/:id/status', authenticateJWT, requireRole(['PI', 'REVIEWER']), Pr
  *         description: Forbidden. Only the PI can remove members.
  */
 router.delete('/:id/members/:userId', authenticateJWT, requireRole(['PI']), ProjectController.removeMember);
+
+/** GET /api/projects/:id/applications — list pending applicants (PI only) */
+router.get('/:id/applications', authenticateJWT, requireRole(['PI', 'CO_INVESTIGATOR']), ApplicationController.listApplications);
 
 export default router;

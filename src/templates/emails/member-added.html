@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #0f172a;
+    color: #f1f5f9;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 600px;
+    margin: 40px auto;
+    background-color: #1e293b;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  .header {
+    border-bottom: 1px solid #334155;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+  }
+  .title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    margin: 0;
+  }
+  .content {
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .highlight {
+    color: #8b5cf6;
+    font-weight: bold;
+  }
+  .footer {
+    margin-top: 30px;
+    font-size: 14px;
+    color: #94a3b8;
+    text-align: center;
+    border-top: 1px solid #334155;
+    padding-top: 20px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">ResearchHub</h1>
+    </div>
+    <div class="content">
+      <p>Hello <strong>{{userName}}</strong>,</p>
+      <p>You have been added to the project <span class="highlight">"{{projectName}}"</span>.</p>
+      <p>Your assigned role is: <strong>{{role}}</strong>.</p>
+      <p>You can now access the project and begin collaborating with your team.</p>
+    </div>
+    <div class="footer">
+      <p>&copy; 2026 Collaborative Research Management Platform. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,23 +1,24 @@
 import { Request, Response, NextFunction } from 'express';
 import { ProjectService } from '../services/ProjectService';
 import { AuthRequest } from '../middlewares/authMiddleware';
-import { Role, EthicalStatus, InternalStage, ProjectStatus } from '../types/enums';
+import { Role, EthicalStatus, ProjectStatus } from '../types/enums';
+import { prisma } from '../db';
 
 export class ProjectController {
   static async createProject(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const userId = req.user?.id;
-      const { title, description } = req.body;
+      const { title, description, researchTopic } = req.body;
 
       if (!userId) {
         return res.status(401).json({ error: 'Unauthorized', message: 'User not authenticated.' });
       }
 
-      if (!title || !description) {
-        return res.status(400).json({ error: 'Bad Request', message: 'Title and description are required.' });
+      if (!title || !description || !researchTopic) {
+        return res.status(400).json({ error: 'Bad Request', message: 'Title, description, and research topic are required.' });
       }
 
-      const project = await ProjectService.createProject(userId, title, description);
+      const project = await ProjectService.createProject(userId, title, description, researchTopic);
       res.status(201).json({ message: 'Project created successfully.', project });
     } catch (error) {
       next(error);
@@ -75,61 +76,12 @@ export class ProjectController {
     }
   }
 
-  static async updateEthics(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const projectId = req.params.id as string;
-      const { 
-        status, 
-        ethicalClearanceNumber, 
-        ethicalClearanceDocumentUrl, 
-        ethicalApprovalDate, 
-        ethicalExpiryDate 
-      } = req.body;
-
-      if (!status) {
-        return res.status(400).json({ error: 'Bad Request', message: 'Ethics status is required.' });
-      }
-
-      if (!Object.values(EthicalStatus).includes(status as EthicalStatus)) {
-        return res.status(400).json({ error: 'Bad Request', message: 'Invalid ethics status.' });
-      }
-
-      const project = await ProjectService.updateEthicalStatus(projectId, status, {
-        ethicalClearanceNumber,
-        ethicalClearanceDocumentUrl,
-        ethicalApprovalDate,
-        ethicalExpiryDate
-      });
-      res.status(200).json({ message: 'Ethical status updated.', project });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  static async updateInternalStage(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      const projectId = req.params.id as string;
-      const { stage } = req.body;
-
-      if (!stage) {
-        return res.status(400).json({ error: 'Bad Request', message: 'Internal stage is required.' });
-      }
-
-      if (!Object.values(InternalStage).includes(stage as InternalStage)) {
-        return res.status(400).json({ error: 'Bad Request', message: 'Invalid internal stage.' });
-      }
-
-      const project = await ProjectService.updateInternalStage(projectId, stage);
-      res.status(200).json({ message: 'Internal stage updated.', project });
-    } catch (error) {
-      next(error);
-    }
-  }
 
   static async updateStatus(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const projectId = req.params.id as string;
       const { status } = req.body;
+      const userId = req.user?.id;
 
       if (!status) {
         return res.status(400).json({ error: 'Bad Request', message: 'Project status is required.' });
@@ -139,6 +91,19 @@ export class ProjectController {
         return res.status(400).json({ error: 'Bad Request', message: 'Invalid project status.' });
       }
 
+      const member = await prisma.projectMember.findUnique({
+        where: { projectId_userId: { projectId, userId: userId! } }
+      });
+
+      // Role check
+      if (!member || (member.role === Role.REVIEWER && status !== ProjectStatus.CERTIFICATION)) {
+        return res.status(403).json({ error: 'Forbidden', message: 'Not authorized for this status.' });
+      }
+      if (member?.role === Role.ASSISTANT && status === ProjectStatus.CERTIFICATION) {
+        return res.status(403).json({ error: 'Forbidden', message: 'Assistant cannot certify.' });
+      }
+
+      // We enforce strict linear transition in the frontend and a basic check here
       const project = await ProjectService.updateProjectStatus(projectId, status);
       res.status(200).json({ message: 'Project status updated.', project });
     } catch (error) {
