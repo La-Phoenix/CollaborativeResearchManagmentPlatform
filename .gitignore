@@ -4,3 +4,4 @@ node_modules
 .frontend.md
 .backendPlan.md
 /generated/prisma
+dist/
