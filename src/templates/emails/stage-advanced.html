@@ -16,6 +16,7 @@
   .highlight { color: #2A7C75; font-weight: 600; }
   .info-box { background: rgba(42,124,117,0.07); border-left: 3px solid #2A7C75; border-radius: 0 4px 4px 0; padding: 14px 18px; margin: 20px 0; }
   .info-box p { margin: 4px 0; font-size: 14px; }
+  .stage-pill { display: inline-block; background: #1A1A18; color: #F2EDE4; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; padding: 4px 12px; border-radius: 4px; }
   .footer { padding: 20px 32px; text-align: center; font-size: 12px; color: rgba(26,26,24,0.4); background: #f5f3ee; border-top: 1px solid rgba(26,26,24,0.08); }
 </style>
 </head>
@@ -24,17 +25,16 @@
     <div class="card">
       <div class="header">
         <p class="header-brand">CRMP <span>·</span> Research Platform</p>
-        <span class="badge">Project Update</span>
+        <span class="badge">Stage Advancement</span>
       </div>
       <div class="body">
         <p>Hello <strong>{{userName}}</strong>,</p>
-        <p>You have been added to the research project <span class="highlight">"{{projectName}}"</span> on CRMP.</p>
+        <p>The research project <span class="highlight">"{{projectName}}"</span> has advanced to a new stage.</p>
         <div class="info-box">
-          <p><strong>Your Role:</strong> {{role}}</p>
-          <p><strong>Project:</strong> {{projectName}}</p>
+          <p><strong>New Stage:</strong> <span class="stage-pill">{{newStage}}</span></p>
+          <p><strong>Advanced by:</strong> {{advancedBy}}</p>
         </div>
-        <p>You can now access the project, collaborate in real time on documents, complete tasks, and contribute to the research lifecycle.</p>
-        <p style="margin-top: 20px; font-size: 13px; color: rgba(26,26,24,0.55);">Log in to CRMP to get started.</p>
+        <p>Log in to CRMP to see what actions are required at this stage and keep the project moving forward.</p>
       </div>
     </div>
     <div class="footer">

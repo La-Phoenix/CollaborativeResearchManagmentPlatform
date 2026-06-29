@@ -47,6 +47,12 @@ export const setupCollaborationSockets = (serverIo: Server) => {
       console.log(`User ${userId} joined project dashboard: ${projectId}`);
     });
 
+    // User joins personal room (for getting added to projects dynamically)
+    socket.on('join-user', (userId: string) => {
+      socket.join(`user-${userId}`);
+      console.log(`User ${userId} joined personal room: user-${userId}`);
+    });
+
     // User leaves a project room
     socket.on('leave-project', (projectId: string, userId: string) => {
       socket.leave(`project-${projectId}`);

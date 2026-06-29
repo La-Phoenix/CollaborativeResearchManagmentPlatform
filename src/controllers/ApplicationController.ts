@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../db';
 import { AuthRequest } from '../middlewares/authMiddleware';
+import { io } from '../sockets/collaborationHandler';
 
 const ROLE_LABELS: Record<string, string> = {
   CO_INVESTIGATOR: 'Co-Investigator',
@@ -70,6 +71,9 @@ export class ApplicationController {
               role: application.role,
             },
           });
+          if (io) {
+            io.to(`user-${application.userId}`).emit('project-added');
+          }
         }
       }
 

@@ -4,6 +4,7 @@ import { AuthRequest } from '../middlewares/authMiddleware';
 import { PrismaClient } from '@prisma/client';
 
 import { prisma } from '../db';
+import { EmailService } from '../services/EmailService';
 
 export class TaskController {
   static async createTask(req: AuthRequest, res: Response, next: NextFunction) {
@@ -15,7 +16,26 @@ export class TaskController {
         return res.status(400).json({ error: 'Bad Request', message: 'Title and dueDate are required.' });
       }
 
-      const task = await TaskService.createTask(projectId, title, new Date(dueDate), assignedUserId);
+      const task = await TaskService.createTask(projectId, title, new Date(dueDate), assignedUserId, req.user?.id);
+
+      // If assigned to someone, notify them
+      if (assignedUserId) {
+        const assignee = await prisma.user.findUnique({ where: { id: assignedUserId } });
+        const assigner = await prisma.user.findUnique({ where: { id: req.user?.id } });
+        const project = await prisma.project.findUnique({ where: { id: projectId } });
+        
+        if (assignee && assigner && project) {
+          await EmailService.sendTaskAssigned(
+            assignee.email,
+            `${assignee.firstName} ${assignee.lastName}`,
+            `${assigner.firstName} ${assigner.lastName}`,
+            project.title,
+            title,
+            new Date(dueDate).toLocaleDateString()
+          );
+        }
+      }
+
       res.status(201).json({ message: 'Task created successfully.', task });
     } catch (error) {
       next(error);
@@ -65,6 +85,29 @@ export class TaskController {
 
       // 3. Update the task
       const updatedTask = await TaskService.updateTaskStatus(taskId, isCompleted);
+
+      // 4. If completed, notify the PI
+      if (isCompleted) {
+        const completer = await prisma.user.findUnique({ where: { id: userId! } });
+        const project = await prisma.project.findUnique({
+          where: { id: existingTask.projectId },
+          include: { members: { include: { user: true } } }
+        });
+
+        if (completer && project) {
+          const piMember = project.members.find(m => m.role === 'PI');
+          if (piMember) {
+            await EmailService.sendTaskCompleted(
+              piMember.user.email,
+              `${piMember.user.firstName} ${piMember.user.lastName}`,
+              `${completer.firstName} ${completer.lastName}`,
+              project.title,
+              existingTask.title
+            );
+          }
+        }
+      }
+
       res.status(200).json({ message: 'Task status updated.', task: updatedTask });
     } catch (error) {
       next(error);

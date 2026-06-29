@@ -10,12 +10,14 @@
   .header { background-color: #1A1A18; padding: 24px 32px; }
   .header-brand { font-size: 18px; font-weight: bold; color: #F2EDE4; letter-spacing: 0.05em; margin: 0; }
   .header-brand span { color: #2A7C75; }
-  .badge { display: inline-block; background: #2A7C75; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; margin-top: 8px; }
+  .badge-approve { display: inline-block; background: #2A7C75; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; margin-top: 8px; }
+  .badge-revise { display: inline-block; background: #dc2626; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 4px; margin-top: 8px; }
   .body { padding: 32px; }
   .body p { font-size: 15px; line-height: 1.7; margin: 0 0 14px; color: #1A1A18; }
   .highlight { color: #2A7C75; font-weight: 600; }
-  .info-box { background: rgba(42,124,117,0.07); border-left: 3px solid #2A7C75; border-radius: 0 4px 4px 0; padding: 14px 18px; margin: 20px 0; }
-  .info-box p { margin: 4px 0; font-size: 14px; }
+  .info-box-approve { background: rgba(42,124,117,0.07); border-left: 3px solid #2A7C75; border-radius: 0 4px 4px 0; padding: 14px 18px; margin: 20px 0; }
+  .info-box-revise { background: rgba(220,38,38,0.07); border-left: 3px solid #dc2626; border-radius: 0 4px 4px 0; padding: 14px 18px; margin: 20px 0; }
+  .info-box-approve p, .info-box-revise p { margin: 4px 0; font-size: 14px; }
   .footer { padding: 20px 32px; text-align: center; font-size: 12px; color: rgba(26,26,24,0.4); background: #f5f3ee; border-top: 1px solid rgba(26,26,24,0.08); }
 </style>
 </head>
@@ -24,17 +26,16 @@
     <div class="card">
       <div class="header">
         <p class="header-brand">CRMP <span>·</span> Research Platform</p>
-        <span class="badge">Project Update</span>
+        <span class="{{badgeClass}}">{{badgeText}}</span>
       </div>
       <div class="body">
-        <p>Hello <strong>{{userName}}</strong>,</p>
-        <p>You have been added to the research project <span class="highlight">"{{projectName}}"</span> on CRMP.</p>
-        <div class="info-box">
-          <p><strong>Your Role:</strong> {{role}}</p>
+        <p>Hello <strong>{{piName}}</strong>,</p>
+        <p>{{decisionMessage}}</p>
+        <div class="{{infoBoxClass}}">
           <p><strong>Project:</strong> {{projectName}}</p>
+          <p><strong>Reviewed by:</strong> {{reviewerName}}</p>
         </div>
-        <p>You can now access the project, collaborate in real time on documents, complete tasks, and contribute to the research lifecycle.</p>
-        <p style="margin-top: 20px; font-size: 13px; color: rgba(26,26,24,0.55);">Log in to CRMP to get started.</p>
+        <p>{{actionMessage}}</p>
       </div>
     </div>
     <div class="footer">

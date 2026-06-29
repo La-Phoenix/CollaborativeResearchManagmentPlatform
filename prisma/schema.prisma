@@ -23,7 +23,8 @@ model User {
 
   projects     ProjectMember[]
   applications ProjectApplication[]
-  tasks        Task[]
+  tasks        Task[] @relation("TaskAssignee")
+  tasksAssigned Task[] @relation("TaskAssigner")
 
   initiatedActivities Activity[] @relation("ActivityInitiator")
   targetedActivities  Activity[] @relation("ActivityTarget")
@@ -92,6 +93,7 @@ model Task {
   id             String   @id @default(uuid())
   projectId      String
   assignedUserId String?
+  assignedByUserId String?
   title          String
   dueDate        DateTime
   isCompleted    Boolean  @default(false)
@@ -99,7 +101,8 @@ model Task {
   updatedAt      DateTime @updatedAt
 
   project  Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  assignee User?   @relation(fields: [assignedUserId], references: [id], onDelete: SetNull)
+  assignee User?   @relation("TaskAssignee", fields: [assignedUserId], references: [id], onDelete: SetNull)
+  assigner User?   @relation("TaskAssigner", fields: [assignedByUserId], references: [id], onDelete: SetNull)
 }
 
 model Document {

@@ -6,13 +6,14 @@ export class TaskService {
   /**
    * Creates a new task within a project.
    */
-  static async createTask(projectId: string, title: string, dueDate: Date, assignedUserId?: string): Promise<Task> {
+  static async createTask(projectId: string, title: string, dueDate: Date, assignedUserId?: string, assignedByUserId?: string): Promise<Task> {
     const task = await prisma.task.create({
       data: {
         projectId,
         title,
         dueDate,
         assignedUserId,
+        assignedByUserId,
       },
     });
 
@@ -27,6 +28,9 @@ export class TaskService {
       where: { projectId },
       include: {
         assignee: {
+          select: { id: true, firstName: true, lastName: true, email: true },
+        },
+        assigner: {
           select: { id: true, firstName: true, lastName: true, email: true },
         },
       },

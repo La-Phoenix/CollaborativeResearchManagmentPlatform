@@ -3,6 +3,8 @@ import { ProjectService } from '../services/ProjectService';
 import { AuthRequest } from '../middlewares/authMiddleware';
 import { Role, EthicalStatus, ProjectStatus } from '../types/enums';
 import { prisma } from '../db';
+import { EmailService } from '../services/EmailService';
+import { io } from '../sockets/collaborationHandler';
 
 export class ProjectController {
   static async createProject(req: AuthRequest, res: Response, next: NextFunction) {
@@ -19,6 +21,9 @@ export class ProjectController {
       }
 
       const project = await ProjectService.createProject(userId, title, description, researchTopic);
+      if (io) {
+        io.to(`user-${userId}`).emit('project-added');
+      }
       res.status(201).json({ message: 'Project created successfully.', project });
     } catch (error) {
       next(error);
@@ -70,6 +75,22 @@ export class ProjectController {
       }
 
       const member = await ProjectService.addProjectMember(projectId, targetUserId, role);
+
+      // Notify the new member
+      const user = await prisma.user.findUnique({ where: { id: targetUserId } });
+      const project = await prisma.project.findUnique({ where: { id: projectId } });
+      if (user && project) {
+        await EmailService.sendMemberAdded(
+          user.email,
+          `${user.firstName} ${user.lastName}`,
+          project.title,
+          role
+        );
+        if (io) {
+          io.to(`user-${targetUserId}`).emit('project-added');
+        }
+      }
+
       res.status(201).json({ message: 'Member added successfully.', member });
     } catch (error) {
       next(error);
@@ -96,7 +117,7 @@ export class ProjectController {
       });
 
       // Role check
-      if (!member || (member.role === Role.REVIEWER && status !== ProjectStatus.CERTIFICATION)) {
+      if (!member || (member.role === Role.REVIEWER && ![ProjectStatus.CERTIFICATION, ProjectStatus.COMPLETED, ProjectStatus.REPORT_WRITING].includes(status as ProjectStatus))) {
         return res.status(403).json({ error: 'Forbidden', message: 'Not authorized for this status.' });
       }
       if (member?.role === Role.ASSISTANT && status === ProjectStatus.CERTIFICATION) {
@@ -105,6 +126,42 @@ export class ProjectController {
 
       // We enforce strict linear transition in the frontend and a basic check here
       const project = await ProjectService.updateProjectStatus(projectId, status);
+
+      // Notify members of stage advancement
+      const updatedProject = await prisma.project.findUnique({
+        where: { id: projectId },
+        include: { members: { include: { user: true } } }
+      });
+      const actor = await prisma.user.findUnique({ where: { id: userId! } });
+
+      if (updatedProject && actor) {
+        const actorName = `${actor.firstName} ${actor.lastName}`;
+        
+        // Notify all members
+        for (const m of updatedProject.members) {
+          await EmailService.sendStageAdvanced(
+            m.user.email,
+            `${m.user.firstName} ${m.user.lastName}`,
+            actorName,
+            updatedProject.title,
+            status
+          );
+        }
+
+        // If it's a final submission, also send a specific Reviewer notification
+        if (status === ProjectStatus.FINAL_SUBMISSION) {
+          const reviewer = updatedProject.members.find(m => m.role === Role.REVIEWER);
+          if (reviewer) {
+            await EmailService.sendReportSubmitted(
+              reviewer.user.email,
+              `${reviewer.user.firstName} ${reviewer.user.lastName}`,
+              actorName,
+              updatedProject.title
+            );
+          }
+        }
+      }
+
       res.status(200).json({ message: 'Project status updated.', project });
     } catch (error) {
       next(error);
