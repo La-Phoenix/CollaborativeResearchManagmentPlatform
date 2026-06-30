@@ -1,69 +1,59 @@
 # Collaborative Research Management Platform (CRMP) - Backend
 
-This is the backend service for the Collaborative Research Management Platform (CRMP) - Group 11, a centralized, multi-tenant web application engineered to securely manage the academic research lifecycle, process real-time collaboration events, and ensure data integrity.
-
-It serves as a decoupled, stateless REST API that powers the Next.js frontend, replacing fragmented institutional workflows with a unified, high-performance ecosystem.
+This is the backend API for the Collaborative Research Management Platform. It provides a robust, secure, and real-time backend infrastructure to support collaborative research projects, real-time document editing, task management, and research outputs.
 
 ## Tech Stack
+- **Framework**: Node.js + Express.js (v5)
+- **Language**: TypeScript
+- **Database**: PostgreSQL (via Neon)
+- **ORM**: Prisma Client + Prisma Adapter PG
+- **Authentication**: JWT (JSON Web Tokens) & bcrypt for password hashing
+- **Real-time Engine**: Socket.IO for live collaborative document editing and notifications
+- **File Storage**: Cloudinary (via Multer)
+- **Email Service**: Brevo API
+- **API Documentation**: Swagger UI & Swagger JSDoc
+- **Validation**: Zod
 
-* **Runtime & Framework:** Node.js, Express, TypeScript
-* **Database & ORM:** PostgreSQL, Prisma ORM
-* **Real-time:** Socket.io
-* **Architecture:** Modular Monolith (Microservices-ready), Clean Architecture
+## Key Features
+- **User Authentication**: Secure registration, login, and JWT-based session management.
+- **Project Management**: Create projects, manage visibility (public/private), and handle research lifecycle stages.
+- **Role-based Access Control (RBAC)**: Fine-grained permissions for Principal Investigators (PI), Co-Investigators, Research Assistants, and Reviewers.
+- **Real-time Collaboration**: WebSocket integration for live document editing with cursor tracking.
+- **Task Management**: Assign, track, and complete project tasks.
+- **Email Notifications**: Automated notifications for task assignments, project completion, and collaboration requests.
+- **File Uploads**: Direct integration with Cloudinary for research output attachments and resources.
 
-## Architecture & Infrastructure
+## Setup & Installation
 
-* **Clean Architecture Strategy:** Strict separation of concerns across Routes, Controllers, Services, and Data Access layers.
-* **Stateless API Layer:** All REST endpoints must remain stateless, utilizing JWTs for session management to support horizontal scaling.
-* **Containerization:** The application and database are fully containerized using Docker to guarantee parity across environments.
-* **ORM:** Prisma enforces type safety between the TypeScript backend and the PostgreSQL database.
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-## Directory Structure
+2. **Environment Variables:**
+   Create a `.env` file in the root directory and add the necessary variables:
+   ```env
+   PORT=3000
+   DATABASE_URL="your-postgresql-connection-string"
+   JWT_SECRET="your-jwt-secret-key"
+   BREVO_API_KEY="your-brevo-api-key"
+   CLOUDINARY_CLOUD_NAME="your-cloud-name"
+   CLOUDINARY_API_KEY="your-api-key"
+   CLOUDINARY_API_SECRET="your-api-secret"
+   FRONTEND_URL="https://res-crmp.justinch.dev"
+   ```
 
-```text
-CRMP-Backend/
-├── prisma/                    # Database schema and relations
-├── src/
-│   ├── config/                # Environment variables, database connection config
-│   ├── controllers/           # Route handlers (req, res logic)
-│   ├── middlewares/           # Global logic (JWT verification, RBAC, error handling)
-│   ├── routes/                # API route definitions
-│   ├── services/              # Core business logic and database queries
-│   ├── sockets/               # Real-time WebSockets event handlers
-│   ├── utils/                 # Helper functions (password hashing, validators)
-│   └── server.ts              # Entry point, Express app initialization
-```
+3. **Database Migration & Seeding:**
+   ```bash
+   npx prisma generate
+   npx prisma db push
+   ```
 
-## Features & Requirements
+4. **Running the Application:**
+   - **Development**: `npm run dev` (runs with nodemon)
+   - **Production Build**: `npm run build`
+   - **Start Production Server**: `npm run start`
 
-### 1. Database Schema
-Optimized for data integrity (3NF) and complex academic queries using PostgreSQL:
-* **User:** Accounts, credentials, and basic info.
-* **Project:** Core research workspace entity.
-* **ProjectMember:** Join table managing Role-Based Access (PI, Co-Investigator, Assistant, Reviewer).
-* **Task:** Project task management.
-* **Document:** Collaborative rich-text or JSON documents.
-* **Survey:** Dynamic survey forms (JSON schema).
-* **ResearchOutput:** Academic outputs and ethical clearances.
-
-### 2. REST API Routes
-All endpoints (except `/api/auth/*`) require a valid Bearer JWT. `rbacMiddleware` intercepts requests based on project roles.
-
-* **Auth:** Login and User Registration.
-* **Projects:** Create, Read, and Manage projects and members.
-* **Tasks:** Assign tasks and update completion status.
-* **Surveys & Outputs:** Manage active surveys and log academic research outputs.
-
-### 3. Real-Time Collaboration (Socket.io)
-Manages persistent WebSocket connections for live document editing and dashboard updates.
-* **Rooms:** Isolated broadcast events per `projectId`.
-* **Events:**
-  * `sendDocumentEdit`: Real-time operational transform syncing without conflicts.
-  * `cursorMove`: Broadcasts active user cursor positions.
-  * `broadcastActivity`: Live notifications for project activity feeds.
-
-## Performance & Security Benchmarks
-
-* **Response Latency:** All REST endpoints aim for <200ms latency under concurrent load.
-* **Real-Time Stability:** Stable persistent multi-user connections via Socket.io.
-* **Security:** `bcrypt` password hashing, strict CORS configurations, and Prisma's parametrized queries for SQL injection prevention.
+## API Documentation
+Once the server is running, you can view the complete interactive API documentation via Swagger by navigating to:
+`http://localhost:3000/api-docs`
