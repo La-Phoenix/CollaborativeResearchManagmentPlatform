@@ -168,6 +168,32 @@ export class ProjectController {
     }
   }
 
+  static async updateVisibility(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const projectId = req.params.id as string;
+      const { visibility } = req.body;
+      
+      if (visibility !== 'PUBLIC' && visibility !== 'PRIVATE') {
+        return res.status(400).json({ error: 'Bad Request', message: 'Visibility must be PUBLIC or PRIVATE.' });
+      }
+
+      await prisma.project.update({
+        where: { id: projectId },
+        data: { visibility }
+      });
+
+      const updatedProject = await ProjectService.getProjectById(projectId);
+
+      // Notify clients to refresh project list/dashboard if necessary
+      const { io } = await import('../sockets/collaborationHandler');
+      io.emit('project-added');
+
+      res.status(200).json({ message: 'Project visibility updated.', project: updatedProject });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   static async removeMember(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const projectId = req.params.id as string;

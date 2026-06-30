@@ -134,6 +134,7 @@ router.get('/:id', authenticateJWT, requireRole(['PI', 'CO_INVESTIGATOR', 'ASSIS
 router.post('/:id/members', authenticateJWT, requireRole(['PI']), ProjectController.addMember);
 
 router.patch('/:id/status', authenticateJWT, requireRole(['PI', 'REVIEWER']), ProjectController.updateStatus);
+router.patch('/:id/visibility', authenticateJWT, requireRole(['PI']), ProjectController.updateVisibility);
 
 /**
  * @swagger

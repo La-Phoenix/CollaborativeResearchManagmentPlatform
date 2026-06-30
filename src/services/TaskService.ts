@@ -15,6 +15,10 @@ export class TaskService {
         assignedUserId,
         assignedByUserId,
       },
+      include: {
+        assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
+        assigner: { select: { id: true, firstName: true, lastName: true, email: true } },
+      },
     });
 
     return task;
@@ -47,6 +51,10 @@ export class TaskService {
     const task = await prisma.task.update({
       where: { id: taskId },
       data: { isCompleted },
+      include: {
+        assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
+        assigner: { select: { id: true, firstName: true, lastName: true, email: true } },
+      },
     });
 
     return task;

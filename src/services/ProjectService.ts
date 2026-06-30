@@ -72,7 +72,12 @@ export class ProjectService {
             },
           },
         },
-        tasks: true,
+        tasks: {
+          include: {
+            assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
+            assigner: { select: { id: true, firstName: true, lastName: true, email: true } },
+          },
+        },
         proposal: true,
       },
     });
@@ -124,7 +129,12 @@ export class ProjectService {
             },
           },
         },
-        tasks: true,
+        tasks: {
+          include: {
+            assignee: { select: { id: true, firstName: true, lastName: true, email: true } },
+            assigner: { select: { id: true, firstName: true, lastName: true, email: true } },
+          },
+        },
         proposal: true,
       },
     });
