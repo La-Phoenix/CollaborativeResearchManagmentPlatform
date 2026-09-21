@@ -14,6 +14,7 @@ import outputRoutes from './routes/outputRoutes';
 import activityRoutes from './routes/activityRoutes';
 import discoveryRoutes from './routes/discoveryRoutes';
 import proposalRoutes from './routes/proposalRoutes';
+import healthRoutes from './routes/healthRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 import { setupCollaborationSockets } from './sockets/collaborationHandler';
 
@@ -42,6 +43,7 @@ app.get('/', (req: Request, res: Response) => res.redirect('/api-docs/'));
 app.get('/api', (req: Request, res: Response) => res.redirect('/api-docs/'));
 
 // Routes
+app.use(healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api/projects', projectRoutes);

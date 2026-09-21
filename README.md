@@ -57,3 +57,9 @@ This is the backend API for the Collaborative Research Management Platform. It p
 ## API Documentation
 Once the server is running, you can view the complete interactive API documentation via Swagger by navigating to:
 `http://localhost:3000/api-docs`
+
+## Health Endpoint
+- `GET /health` — liveness endpoint that returns `200` with:
+  ```json
+  {"status":"ok"}
+  ```
